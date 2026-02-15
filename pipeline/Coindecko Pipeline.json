@@ -1,0 +1,251 @@
+{
+	"name": "Coindecko Pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "CoinDecko API call",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1"
+				}
+			},
+			{
+				"name": "Store CoinDecko JSON Data",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Delete old CoinDecko data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "HttpReadSettings",
+							"requestMethod": "GET"
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"metadata": [
+								{
+									"name": "ingestiontime",
+									"value": {
+										"value": "@utcNow()",
+										"type": "Expression"
+									}
+								}
+							]
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "Coindecko_data",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Silver_data",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Fail1",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "CoinDecko API call",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "CoinDecko API Call failed",
+					"errorCode": {
+						"value": "@activity('CoinDecko API call').output",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Delete old CoinDecko data",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "Logging of Old CoinDecko JSON Data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "Silver_data",
+						"type": "DatasetReference"
+					},
+					"enableLogging": false,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"fileListPath": "silver-layer/data.json",
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "Logging of Old CoinDecko JSON Data",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "CoinDecko API call",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "Silver_data",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "LoggingData",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Bronze to Silver Transformation",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Store CoinDecko JSON Data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/bhanusagarkv@gmail.com/Bronze to Silver Transformation"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks2",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Silver to Gold tranformation",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Bronze to Silver Transformation",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/bhanusagarkv@gmail.com/Silver to Bronze Tranformation"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks2",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-02-15T06:26:45Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

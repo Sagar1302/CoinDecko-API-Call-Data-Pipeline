@@ -1,0 +1,9 @@
+{
+	"name": "coinDecko-pipeline",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "d9bb6c4e-a6af-4eb2-b11c-f28930e229aa",
+		"tenantId": "c972f919-948b-4db6-b659-9377d91e966e"
+	}
+}

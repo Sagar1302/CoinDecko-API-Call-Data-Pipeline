@@ -1,0 +1,23 @@
+{
+	"name": "LoggingData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Log old files",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "data_logging_@{formatDateTime(utcNow(),'yyyyMMddHHmmss')}.json",
+					"type": "Expression"
+				},
+				"fileSystem": "loggingcontainer"
+			}
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
