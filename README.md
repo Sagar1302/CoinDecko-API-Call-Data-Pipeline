@@ -4,6 +4,8 @@
 This repository demonstrates a **production-grade data pipeline** for cryptocurrency market data using **Azure Databricks**, **ADLS Gen2**, and **Delta Lake**, following the **Medallion Architecture** (Bronze → Silver → Gold).
 
 ---
+<img width="1298" height="325" alt="image" src="https://github.com/user-attachments/assets/cfb8b439-3a4a-42e5-b263-2309c9b4ddfa" />
+
 
 ## 📂 Architecture Overview
 
@@ -45,5 +47,4 @@ spark.conf.set(
     sas_token
 )
 
-<img width="1298" height="325" alt="image" src="https://github.com/user-attachments/assets/fad5d954-a060-4b89-b835-a2292f84cc5f" />
 
