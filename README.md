@@ -44,3 +44,6 @@ spark.conf.set(
     f"fs.azure.sas.{container_name}.{storage_account_name}.blob.core.windows.net",
     sas_token
 )
+
+<img width="1298" height="325" alt="image" src="https://github.com/user-attachments/assets/fad5d954-a060-4b89-b835-a2292f84cc5f" />
+
