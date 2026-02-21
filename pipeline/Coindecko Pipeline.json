@@ -84,6 +84,7 @@
 			},
 			{
 				"name": "Fail1",
+				"description": "Unable to get data from api",
 				"type": "Fail",
 				"dependsOn": [
 					{
